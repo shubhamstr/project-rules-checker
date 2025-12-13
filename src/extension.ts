@@ -14,18 +14,32 @@ export function activate(context: vscode.ExtensionContext) {
       await vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
-          title: "Scanning project structure…",
+          title: "Scanning project rules",
           cancellable: false
         },
-        async () => {
-          const results = await runAllRules()
+        async (progress) => {
+          const results = await runAllRules(
+            ({ index, total, ruleName }) => {
+              progress.report({
+                message: `(${index}/${total}) ${ruleName}`
+              })
+            }
+          )
 
           outputChannel.clear()
           outputChannel.show(true)
 
+          outputChannel.appendLine(
+            `✔ Scanned ${results.length === 0 ? "all" : ""} rules`
+          )
+          outputChannel.appendLine(
+            `✔ Total rules: ${results.length}`
+          )
+          outputChannel.appendLine("")
+
           if (!results.length) {
             outputChannel.appendLine(
-              "✅ Project follows all dev rules"
+              "✅ No issues found"
             )
             return
           }
@@ -38,11 +52,9 @@ export function activate(context: vscode.ExtensionContext) {
             outputChannel.appendLine(
               `${i + 1}. [${r.level.toUpperCase()}] ${r.message}`
             )
-
             if (r.fix) {
               outputChannel.appendLine(`   👉 Fix: ${r.fix}`)
             }
-
             outputChannel.appendLine("")
           })
         }
@@ -51,8 +63,4 @@ export function activate(context: vscode.ExtensionContext) {
   )
 
   context.subscriptions.push(command, outputChannel)
-}
-
-export function deactivate() {
-  outputChannel?.dispose()
 }
