@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Project Rules Configuration",
+  "description": "Configuration file for Project Rules Checker",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "dev",
+        "ci"
+      ],
+      "default": "dev",
+      "description": "Execution mode. CI mode is stricter."
+    },
+    "ignore": {
+      "type": "array",
+      "description": "Glob patterns or paths to ignore during scanning",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rules": {
+      "type": "object",
+      "description": "Rule-specific configuration",
+      "additionalProperties": {
+        "$ref": "#/definitions/ruleConfig"
+      }
+    }
+  },
+  "definitions": {
+    "ruleConfig": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable this rule"
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "error",
+            "warning",
+            "info",
+            "off"
+          ],
+          "description": "Override rule severity or disable output"
+        },
+        "allow": {
+          "type": "array",
+          "description": "Allow-listed values (IPs, filenames, etc.)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requireExample": {
+          "type": "boolean",
+          "description": "Require example files (e.g. .env.example)"
+        },
+        "warningSizeMB": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Warning threshold for file size (MB)"
+        },
+        "errorSizeMB": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Error threshold for file size (MB)"
+        }
+      }
+    }
+  }
+}

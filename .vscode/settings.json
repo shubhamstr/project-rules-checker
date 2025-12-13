@@ -1,0 +1,8 @@
+{
+  "json.schemas": [
+    {
+      "fileMatch": [".projectrules.json"],
+      "url": "./schemas/projectrules.schema.json"
+    }
+  ]
+}
