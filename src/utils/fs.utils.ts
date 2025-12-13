@@ -1,7 +1,8 @@
 import fs from "fs"
 import path from "path"
+import { loadProjectRulesConfig } from "../config/projectRules.config"
 
-const IGNORE_DIRS = [
+const IGNORE_DIRS = loadProjectRulesConfig().ignore ?? [
   "node_modules",
   ".git",
   "dist",
