@@ -1,33 +1,55 @@
 import * as vscode from "vscode"
 import path from "path"
+import fs from "fs"
 import { RuleResult } from "../types/rule.types"
-import { walkFiles } from "../utils/fs.utils"
+
+const IGNORE_DIRS = [
+  "node_modules",
+  ".git",
+  "dist",
+  "build",
+  ".next",
+  ".turbo"
+]
 
 export async function folderCaseRule(): Promise<RuleResult[]> {
-  const root = vscode.workspace.rootPath
-  if (!root) return []
+  const workspaceRoot = vscode.workspace.rootPath
+  if (!workspaceRoot) return []
 
+  const root = workspaceRoot // ✅ now type is string
   const results: RuleResult[] = []
-  const seen = new Map<string, string>()
 
-  walkFiles(root, (filePath) => {
-    const dir = path.dirname(filePath)
+  function walkDir(dir: string) {
+    const entries = fs.readdirSync(dir, { withFileTypes: true })
+    const nameMap = new Map<string, string>()
 
-    if (!seen.has(dir.toLowerCase())) {
-      seen.set(dir.toLowerCase(), dir)
-      return
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue
+      if (IGNORE_DIRS.includes(entry.name)) continue
+
+      const lower = entry.name.toLowerCase()
+
+      if (nameMap.has(lower)) {
+        const existing = nameMap.get(lower)! // safe
+
+        results.push({
+          rule: "folder-case",
+          level: "warning",
+          message:
+            `Folder case conflict detected in ${path.relative(root, dir)}:\n` +
+            `- ${existing}\n` +
+            `- ${entry.name}`,
+          fix: "Use consistent lowercase folder names"
+        })
+      } else {
+        nameMap.set(lower, entry.name)
+      }
+
+      walkDir(path.join(dir, entry.name))
     }
+  }
 
-    const existing = seen.get(dir.toLowerCase())
-    if (existing && existing !== dir) {
-      results.push({
-        rule: "folder-case",
-        level: "warning",
-        message: `Folder case conflict detected:\n${existing}\n${dir}`,
-        fix: "Use consistent lowercase folder naming"
-      })
-    }
-  })
+  walkDir(root)
 
   return results
 }
