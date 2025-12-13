@@ -3,9 +3,13 @@ import path from "path"
 import fs from "fs"
 import { RuleResult } from "../types/rule.types"
 import { walkFiles } from "../utils/fs.utils"
+import { loadProjectRulesConfig } from "../config/projectRules.config"
 
-const WARN_SIZE = 5 * 1024 * 1024
-const ERROR_SIZE = 20 * 1024 * 1024
+const config = loadProjectRulesConfig()
+const ruleConfig = config.rules?.["large-files"]
+
+const WARN_SIZE = (ruleConfig?.warningSizeMB ?? 5) * 1024 * 1024
+const ERROR_SIZE = (ruleConfig?.errorSizeMB ?? 20) * 1024 * 1024
 
 export async function largeFilesRule(): Promise<RuleResult[]> {
   const workspaceRoot = vscode.workspace.rootPath
