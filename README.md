@@ -73,7 +73,9 @@ You can customize the behavior of the extension by adding a
   "rules": {
     "env": {
       "enabled": true,
-      "severity": "error"
+      "severity": "error",
+      "requireExample": true,
+      "allow": [".env.local", ".env.development"]
     },
     "gitignore": {
       "enabled": true,
