@@ -1,5 +1,6 @@
 import * as vscode from "vscode"
 import { runAllRules } from "./engine/ruleRunner"
+import { RuleResult } from "./types/rule.types"
 
 let outputChannel: vscode.OutputChannel
 
@@ -29,38 +30,72 @@ export function activate(context: vscode.ExtensionContext) {
           outputChannel.clear()
           outputChannel.show(true)
 
-          outputChannel.appendLine(
-            `✔ Scanned ${results.length === 0 ? "all" : ""} rules`
-          )
-          outputChannel.appendLine(
-            `✔ Total rules: ${results.length}`
-          )
+          // ---- SUMMARY ----
+          outputChannel.appendLine("PROJECT RULES REPORT")
+          outputChannel.appendLine("=".repeat(30))
+          outputChannel.appendLine(`Total rules scanned : ${results.length}`)
+          outputChannel.appendLine(`Issues found       : ${results.length}`)
           outputChannel.appendLine("")
 
           if (!results.length) {
-            outputChannel.appendLine(
-              "✅ No issues found"
-            )
+            outputChannel.appendLine("✅ No issues found")
             return
           }
 
-          outputChannel.appendLine(
-            `🔍 Found ${results.length} issue(s):\n`
-          )
-
-          results.forEach((r, i) => {
-            outputChannel.appendLine(
-              `${i + 1}. [${r.level.toUpperCase()}] ${r.message}`
-            )
-            if (r.fix) {
-              outputChannel.appendLine(`   👉 Fix: ${r.fix}`)
-            }
-            outputChannel.appendLine("")
-          })
+          // ---- GROUP BY RULE ----
+          printResultsGroupedByRule(outputChannel, results)
         }
       )
     }
   )
 
   context.subscriptions.push(command, outputChannel)
+}
+
+// ----------------------------
+// Helper: Group output by rule
+// ----------------------------
+function printResultsGroupedByRule(
+  output: vscode.OutputChannel,
+  results: RuleResult[]
+) {
+  const grouped = new Map<string, RuleResult[]>()
+
+  // Group by rule name
+  results.forEach(r => {
+    if (!grouped.has(r.rule)) {
+      grouped.set(r.rule, [])
+    }
+    grouped.get(r.rule)!.push(r)
+  })
+
+  // Render each rule section
+  grouped.forEach((items, rule) => {
+    output.appendLine("=".repeat(30))
+    output.appendLine(rule.toUpperCase())
+    output.appendLine("=".repeat(30))
+
+    items.forEach((r, index) => {
+      const icon =
+        r.level === "error"
+          ? "🚨"
+          : r.level === "warning"
+            ? "⚠️"
+            : "ℹ️"
+
+      output.appendLine(
+        `${icon} ${index + 1}. ${r.message}`
+      )
+
+      if (r.fix) {
+        output.appendLine(`   👉 Fix: ${r.fix}`)
+      }
+    })
+
+    output.appendLine("")
+  })
+}
+
+export function deactivate() {
+  outputChannel?.dispose()
 }
