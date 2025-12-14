@@ -13,7 +13,7 @@
   "activationEvents": [
     "onCommand:projectRules.check"
   ],
-  "main": "./dist/extension.js",
+  "main": "dist/extension.js",
   "contributes": {
     "commands": [
       {
@@ -30,5 +30,9 @@
     "@types/node": "^20.10.0",
     "@types/vscode": "^1.85.0",
     "typescript": "^5.3.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shubhamstr/project-rules-checker.git"
   }
 }
