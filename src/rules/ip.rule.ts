@@ -2,6 +2,7 @@ import * as vscode from "vscode"
 import path from "path"
 import { RuleResult } from "../types/rule.types"
 import { walkFiles, readFile } from "../utils/fs.utils"
+import { getRuleConfig } from "../utils/ruleConfig.utils"
 
 // ---- Regexes ----
 
@@ -28,9 +29,16 @@ const CODE_EXTENSIONS = [
   ".php", ".cs", ".rb"
 ]
 
+interface IpRuleConfig {
+  allow?: string[]
+}
+
 export async function ipRule(): Promise<RuleResult[]> {
   const root = vscode.workspace.rootPath
   if (!root) return []
+
+  // ✅ Read config INSIDE rule
+  const { allow = [] } = getRuleConfig<IpRuleConfig>("ip")
 
   const results: RuleResult[] = []
 
@@ -45,12 +53,19 @@ export async function ipRule(): Promise<RuleResult[]> {
 
     const content = readFile(filePath)
     const lines = content.split("\n")
+    const relative = path.relative(root, filePath)
 
     lines.forEach((line, index) => {
-      if (!IP_REGEX.test(line)) return
-      if (LOCAL_IP_REGEX.test(line)) return
+      const match = line.match(IP_REGEX)
+      if (!match) return
 
-      const relative = path.relative(root, filePath)
+      const ip = match[0]
+
+      // Allow localhost
+      if (LOCAL_IP_REGEX.test(ip)) return
+
+      // ✅ Allowlist support
+      if (allow.includes(ip)) return
 
       // 🔥 IP + credentials → HIGH severity
       if (CREDENTIAL_REGEX.test(line)) {
@@ -65,7 +80,7 @@ export async function ipRule(): Promise<RuleResult[]> {
       }
 
       // ⚠️ Private IP
-      if (PRIVATE_IP_REGEX.test(line)) {
+      if (PRIVATE_IP_REGEX.test(ip)) {
         results.push({
           rule: "ip",
           level: "warning",
