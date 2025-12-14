@@ -24,6 +24,7 @@
   },
   "scripts": {
     "compile": "tsc -p .",
+    "prepublishOnly": "npm run compile",
     "watch": "tsc -watch -p ."
   },
   "devDependencies": {
