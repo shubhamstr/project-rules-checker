@@ -61,15 +61,14 @@ You can customize the behavior of the extension by adding a
 
 ```json
 {
+  "$schema": "./schemas/projectrules.schema.json",
   "mode": "dev",
-
   "ignore": [
     "node_modules",
     "dist",
     "build",
     "**/*.spec.ts"
   ],
-
   "rules": {
     "env": {
       "enabled": true,
@@ -81,23 +80,58 @@ You can customize the behavior of the extension by adding a
       "enabled": true,
       "severity": "warning"
     },
+    "readme": {
+      "enabled": true
+    },
     "folder-case": {
       "enabled": true,
       "severity": "warning"
     },
+    "secret": {
+      "enabled": true,
+      "severity": "error"
+    },
     "ip": {
       "enabled": true,
       "severity": "error",
-      "allow": ["127.0.0.1"]
+      "allow": ["127.0.0.1", "10.0.0.5"]
     },
-    "console": {
+    "lockfile": {
       "enabled": true,
-      "severity": "warning"
+      "severity": "error"
     },
     "large-files": {
       "enabled": true,
       "warningSizeMB": 5,
       "errorSizeMB": 20
+    },
+    "imports-depth": {
+      "enabled": true,
+      "maxDepth": 4
+    },
+    "console": {
+      "enabled": true,
+      "severity": "warning"
+    },
+    "dangerous-api": {
+      "enabled": true,
+      "severity": "error"
+    },
+    "process-env": {
+      "enabled": true,
+      "severity": "warning"
+    },
+    "tests-only": {
+      "enabled": true,
+      "severity": "error"
+    },
+    "todo": {
+      "enabled": true,
+      "severity": "warning"
+    },
+    "dependency-version": {
+      "enabled": true,
+      "severity": "warning"
     }
   }
 }
