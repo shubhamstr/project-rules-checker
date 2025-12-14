@@ -19,6 +19,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # 🔑 REQUIRED: compile TypeScript → dist/extension.js
+      - name: Build extension
+        run: npm run compile
+
+      # (optional but very useful while validating)
+      - name: Verify entry file
+        run: ls -la dist/extension.js
+
       - name: Install vsce
         run: npm install -g @vscode/vsce
 
