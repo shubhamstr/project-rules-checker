@@ -2,7 +2,7 @@
   "name": "project-rules-checker",
   "displayName": "Project Rules Checker",
   "description": "Checks project structure and dev rules like env safety, gitignore, and folder conventions",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "shubhamstr",
   "engines": {
     "vscode": "^1.85.0"
