@@ -37,7 +37,7 @@ Ctrl + Shift + P
 Run:
 
 ```
-Project Rules: Check
+Project Rules: Project Rules Checker
 ```
 
 The scan results will appear in the **Output panel** under:
