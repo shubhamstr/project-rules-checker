@@ -3,23 +3,33 @@ import path from "path"
 import fs from "fs"
 import { RuleResult } from "../types/rule.types"
 import { walkFiles } from "../utils/fs.utils"
-import { loadProjectRulesConfig } from "../config/projectRules.config"
+import { getRuleConfig } from "../utils/ruleConfig.utils"
 
-const config = loadProjectRulesConfig()
-const ruleConfig = config.rules?.["large-files"]
-
-const WARN_SIZE = (ruleConfig?.warningSizeMB ?? 5) * 1024 * 1024
-const ERROR_SIZE = (ruleConfig?.errorSizeMB ?? 20) * 1024 * 1024
+interface LargeFilesRuleConfig {
+  warningSizeMB?: number
+  errorSizeMB?: number
+}
 
 export async function largeFilesRule(): Promise<RuleResult[]> {
   const workspaceRoot = vscode.workspace.rootPath
   if (!workspaceRoot) return []
   const root = workspaceRoot
 
+  // ✅ Read config INSIDE rule
+  const {
+    warningSizeMB = 5,
+    errorSizeMB = 20
+  } = getRuleConfig<LargeFilesRuleConfig>("large-files")
+
+  const WARN_SIZE = warningSizeMB * 1024 * 1024
+  const ERROR_SIZE = errorSizeMB * 1024 * 1024
+
   const results: RuleResult[] = []
 
   walkFiles(root, (filePath) => {
     const size = fs.statSync(filePath).size
+    if (size < WARN_SIZE) return
+
     const rel = path.relative(root, filePath)
 
     if (size > ERROR_SIZE) {
@@ -29,7 +39,7 @@ export async function largeFilesRule(): Promise<RuleResult[]> {
         message: `Large file committed (${Math.round(size / 1024 / 1024)}MB): ${rel}`,
         fix: "Remove or use Git LFS"
       })
-    } else if (size > WARN_SIZE) {
+    } else {
       results.push({
         rule: "large-files",
         level: "warning",
